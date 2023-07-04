@@ -22,9 +22,9 @@ body {
 .container {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
     max-width: 100rem;
     padding: 0 5rem;
+    flex-flow: column;
 }
 
 .countries {
@@ -33,6 +33,7 @@ body {
     font-size: 2rem;
     opacity: 0;
     transition: opacity 1s;
+    max-width: 100rem;
 }
 
 .country {
