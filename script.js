@@ -346,6 +346,7 @@ const whereAmI = function() {
                     })
                     .finally(() => {
                         countriesContainer.style.opacity = 1;
+                        btn.style.opacity = 0;
                     })
 
             })
