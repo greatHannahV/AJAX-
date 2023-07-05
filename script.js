@@ -199,37 +199,156 @@ const getJSON = function(url, errorMsg = 'Something went wrong') {
 //     btn.style.opacity = 0
 
 // })
-const getCountryData = function(country) {
-    // country 1
-    getJSON(`https://restcountries.com/v3.1/name/${country}`, 'Country not found ')
-        .then(data => {
-            renderCountry(data[0]);
 
-            const neighbours = data[0].borders;
 
-            if (!neighbours) throw new Error('No neighbour found!');
 
-            const neighbourPromises = neighbours.map(neighbour => {
-                // country neighbours
-                return getJSON(`https://restcountries.com/v3.1/alpha/${neighbour}`, 'Country not found ');
-            });
+// const getCountryData = function(country) {
+//     // country 1
+//     getJSON(`https://restcountries.com/v3.1/name/${country}`, 'Country not found ')
+//         .then(data => {
+//             renderCountry(data[0]);
 
-            return Promise.all(neighbourPromises);
-        })
-        .then(data => {
-            data.forEach(neighborData => {
-                renderCountry(neighborData[0], 'neighbour');
-            });
-        })
-        .catch(err => {
-            errorRender(`Something went wrong 🔶 ${err.message} Try again.`);
-        })
-        .finally(() => {
-            countriesContainer.style.opacity = 1;
-        });
-};
+//             const neighbours = data[0].borders;
 
-btn.addEventListener('click', function() {
-    getCountryData('Greece');
-    btn.style.opacity = 0;
-});
+//             if (!neighbours) throw new Error('No neighbour found!');
+
+//             const neighbourPromises = neighbours.map(neighbour => {
+//                 // country neighbours
+//                 return getJSON(`https://restcountries.com/v3.1/alpha/${neighbour}`, 'Country not found ');
+//             });
+
+//             return Promise.all(neighbourPromises);
+//         })
+//         .then(data => {
+//             data.forEach(neighborData => {
+//                 renderCountry(neighborData[0], 'neighbour');
+//             });
+//         })
+//         .catch(err => {
+//             errorRender(`Something went wrong 🔶 ${err.message} Try again.`);
+//         })
+//         .finally(() => {
+//             countriesContainer.style.opacity = 1;
+//         });
+// };
+
+// btn.addEventListener('click', function() {
+//     getCountryData('Greece');
+// });
+
+//create a promise
+
+// const lottery = new Promise(function(resolve, reject) {
+//     console.log('Lotter draw is happening 💫');
+//     setTimeout(function() {
+//         if (Math.random() >= 0.5) {
+//             resolve('you win 🧡');
+//         } else {
+//             reject(new Error('you lost 💨'));
+//         }
+//     }, 2000)
+// })
+
+// lottery
+//     .then(res => console.log(res))
+//     .catch(err => console.error(err))
+
+// /////////
+// //promisifying
+// const wait = function(seconds) {
+//     return new Promise(resolve =>
+//         setTimeout(resolve, seconds * 1000)
+//     )
+
+// }
+// wait(5).then(() => {
+//     console.log('i waited for 5 sec');
+//     return wait(1)
+// }).then(() => console.log('i waited for 1 sec'))
+
+// Promise.resolve('immediately resolved').then(x => console.log(x));
+// Promise.reject(new Error('immediately rejected')).catch(x => console.error(x))
+
+//////////
+//promisifying the geo api
+//my version 1
+// btn.style.opacity = 0
+// navigator.geolocation.getCurrentPosition(
+//     position => {
+
+//         let { latitude, longitude } = position.coords
+//         let coord = { latitude, longitude }
+
+//         return fetch(` https://geocode.maps.co/reverse?lat=${coord.latitude}&lon=${coord.longitude}`).then(response => response.json())
+//             .then(data => {
+//                 const country = data.address.country; // Assuming the API response contains an 'address' property
+//                 // console.log(country); // Print the retrieved address
+//                 return fetch(`https://restcountries.com/v3.1/name/${country}`).then(function(response) {
+//                     return response.json() //another fullfield -promise from json
+//                 }).then(function(data) {
+//                     console.log(data[0]);
+//                     renderCountry(data[0])
+
+//                 })
+//             })
+//             .catch(error => {
+//                 console.error('Error:', error);
+//             });
+//     },
+//     err => console.error(err)
+// );
+
+///////////////
+
+
+
+const getPosition = function() {
+    return new Promise(function(resolve, reject) {
+        // navigator.geolocation.getCurrentPosition(
+        //     position => resolve(position),
+        //     err => reject(err)
+        // );
+        navigator.geolocation.getCurrentPosition(resolve, reject)
+    })
+}
+const whereAmI = function() {
+    getPosition().then(position => {
+        let { latitude, longitude } = position.coords;
+        let coord = { latitude, longitude }
+
+        return fetch(` https://geocode.maps.co/reverse?lat=${coord.latitude}&lon=${coord.longitude}`).then(response => response.json())
+            .then(data => {
+                const country = data.address.country; // Assuming the API response contains an 'address' property
+                // console.log(country); // Print the retrieved address
+                return fetch(`https://restcountries.com/v3.1/name/${country}`).then(function(response) {
+                        return response.json() //another fullfield -promise from json
+                    }).then(function(data) {
+
+                        renderCountry(data[0])
+                        const neighbours = data[0].borders;
+
+                        if (!neighbours) throw new Error('No neighbour found!');
+
+                        const neighbourPromises = neighbours.map(neighbour => {
+                            // country neighbours
+                            return getJSON(`https://restcountries.com/v3.1/alpha/${neighbour}`, 'Country not found ');
+                        });
+
+                        return Promise.all(neighbourPromises);
+                    })
+                    .then(data => {
+                        data.forEach(neighborData => {
+                            renderCountry(neighborData[0], 'neighbour');
+                        });
+                    })
+                    .catch(err => {
+                        errorRender(`Something went wrong 🔶 ${err.message} Try again.`);
+                    })
+                    .finally(() => {
+                        countriesContainer.style.opacity = 1;
+                    })
+
+            })
+    })
+}
+btn.addEventListener('click', whereAmI)

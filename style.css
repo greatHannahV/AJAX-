@@ -81,6 +81,12 @@ body {
     margin-bottom: 0.7rem;
 }
 
+.city__name {
+    font-size: 3rem;
+    margin-bottom: 0.7rem;
+    color: #b13333;
+}
+
 .country__region {
     font-size: 1.4rem;
     margin-bottom: 2.5rem;
