@@ -47,7 +47,7 @@ const renderCountry = function(data, className = '') {
   </article>
     `;
     countriesContainer.insertAdjacentHTML('beforeend', html)
-        // countriesContainer.style.opacity = 1;
+    countriesContainer.style.opacity = 1;
 };
 // ///////////////////////////////////////
 // const getCountryAndNeighbour = function(country) {
@@ -121,7 +121,7 @@ const renderCountry = function(data, className = '') {
 
 const errorRender = function(msg) {
     countriesContainer.insertAdjacentText('beforeend', msg);
-    // countriesContainer.style.opacity = 1;
+    countriesContainer.style.opacity = 1;
 }
 const getJSON = function(url, errorMsg = 'Something went wrong') {
         return fetch(url).then(response => {
@@ -255,16 +255,16 @@ const getJSON = function(url, errorMsg = 'Something went wrong') {
 
 // /////////
 // //promisifying
-// const wait = function(seconds) {
-//     return new Promise(resolve =>
-//         setTimeout(resolve, seconds * 1000)
-//     )
+const wait = function(seconds) {
+        return new Promise(resolve =>
+            setTimeout(resolve, seconds * 1000)
+        )
 
-// }
-// wait(5).then(() => {
-//     console.log('i waited for 5 sec');
-//     return wait(1)
-// }).then(() => console.log('i waited for 1 sec'))
+    }
+    // wait(5).then(() => {
+    //     console.log('i waited for 5 sec');
+    //     return wait(1)
+    // }).then(() => console.log('i waited for 1 sec'))
 
 // Promise.resolve('immediately resolved').then(x => console.log(x));
 // Promise.reject(new Error('immediately rejected')).catch(x => console.error(x))
@@ -303,53 +303,182 @@ const getJSON = function(url, errorMsg = 'Something went wrong') {
 
 
 const getPosition = function() {
-    return new Promise(function(resolve, reject) {
-        // navigator.geolocation.getCurrentPosition(
-        //     position => resolve(position),
-        //     err => reject(err)
-        // );
-        navigator.geolocation.getCurrentPosition(resolve, reject)
-    })
+        return new Promise(function(resolve, reject) {
+            // navigator.geolocation.getCurrentPosition(
+            //     position => resolve(position),
+            //     err => reject(err)
+            // );
+            navigator.geolocation.getCurrentPosition(resolve, reject)
+        })
+    }
+    // const whereAmI = function() {
+    //     getPosition().then(position => {
+    //         let { latitude, longitude } = position.coords;
+    //         let coord = { latitude, longitude }
+
+//         return fetch(` https://geocode.maps.co/reverse?lat=${coord.latitude}&lon=${coord.longitude}`).then(response => response.json())
+//             .then(data => {
+//                 const country = data.address.country; // Assuming the API response contains an 'address' property
+//                 // console.log(country); // Print the retrieved address
+//                 return fetch(`https://restcountries.com/v3.1/name/${country}`).then(function(response) {
+//                         return response.json() //another fullfield -promise from json
+//                     }).then(function(data) {
+
+//                         renderCountry(data[0])
+//                         const neighbours = data[0].borders;
+
+//                         if (!neighbours) throw new Error('No neighbour found!');
+
+//                         const neighbourPromises = neighbours.map(neighbour => {
+//                             // country neighbours
+//                             return getJSON(`https://restcountries.com/v3.1/alpha/${neighbour}`, 'Country not found ');
+//                         });
+
+//                         return Promise.all(neighbourPromises);
+//                     })
+//                     .then(data => {
+//                         data.forEach(neighborData => {
+//                             renderCountry(neighborData[0], 'neighbour');
+//                         });
+//                     })
+//                     .catch(err => {
+//                         errorRender(`Something went wrong 🔶 ${err.message} Try again.`);
+//                     })
+//                     .finally(() => {
+//                         countriesContainer.style.opacity = 1;
+//                         btn.style.opacity = 0;
+//                     })
+
+//             })
+//     })
+// }
+// btn.addEventListener('click', whereAmI)
+
+// const classes = document.querySelectorAll('.images');
+
+// const createImage = function(imgPath) {
+//     return new Promise(function(resolve, reject) {
+//         let img = document.createElement('img');
+//         img.src = imgPath;
+//         img.classList.add('images');
+
+//         // Iterate over the NodeList and append the img element to each element
+//         classes.forEach(function(classesImg) {
+//             classesImg.appendChild(img);
+//         });
+//         setTimeout(function() {
+//             img.remove();
+//             resolve(),
+//                 new Error('error')
+//             reject()
+//         }, 2000)
+//     })
+// };
+
+
+// createImage('img/img-1.jpg')
+//     .then(() => createImage('img/img-2.jpg'))
+//     .catch(function(err) {
+//         console.error('Error creating or removing image:', err);
+//     });
+
+
+//////////////
+// const classes = document.querySelector('.images');
+
+// const createImage = function(imgPath) {
+//     return new Promise(function(resolve, reject) {
+//         let img = document.createElement('img');
+//         img.src = imgPath;
+//         img.addEventListener('load', function() {
+//             classes.appendChild(img);
+//             resolve(img)
+//         })
+//         img.addEventListener('error', function() {
+//             reject(new Error('Image is not found'))
+//         })
+//     })
+// }
+// let currImg;
+// createImage('img/img-1.jpg').then(img => {
+//         currImg = img;
+//         console.log('img 1')
+//         return wait(2)
+//     })
+//     .then(() => {
+//         currImg.style.display = 'none';
+//         return createImage('img/img-2.jpg')
+//     })
+//     .then(img => {
+//         currImg = img;
+//         console.log('img 2')
+//         return wait(2)
+//     })
+//     .then(() => {
+//         currImg.style.display = 'none';
+//     })
+//     .catch(err => console.error(err))
+
+
+////////262
+//262
+/////////
+const whereAmI = async function() {
+    try {
+        //geolocation
+        const position = await getPosition()
+        let { latitude: lat, longitude: lng } = position.coords;
+        //reverse geocoding
+        const resGeo = await fetch(` https://geocode.maps.co/reverse?lat=${lat}&lon=${lng}`);
+        if (!resGeo.ok) throw new Error('cannot get location data');
+        const dataGeo = await resGeo.json();
+        //country data
+        const res = await fetch(`https://restcountries.com/v3.1/name/${dataGeo.address.country}`);
+        if (!res.ok) throw new Error('cannot get country')
+
+        const data = await res.json();
+        renderCountry(data[0]);
+
+        const borders = data[0].borders;
+
+        borders.forEach(async(neighbour) => {
+            const dataNeighbours = await fetch(`https://restcountries.com/v3.1/alpha/${neighbour}`);
+            if (!dataNeighbours) throw new Error('No neighbour found!');
+            const neighborD = await dataNeighbours.json();
+
+            renderCountry(neighborD[0], 'neighbour')
+        })
+
+
+
+        btn.style.opacity = 0;
+
+    } catch (err) {
+        console.error(err);
+        errorRender(`error: ${err.message}`)
+    }
+
+
 }
-const whereAmI = function() {
-    getPosition().then(position => {
-        let { latitude, longitude } = position.coords;
-        let coord = { latitude, longitude }
+whereAmI()
 
-        return fetch(` https://geocode.maps.co/reverse?lat=${coord.latitude}&lon=${coord.longitude}`).then(response => response.json())
-            .then(data => {
-                const country = data.address.country; // Assuming the API response contains an 'address' property
-                // console.log(country); // Print the retrieved address
-                return fetch(`https://restcountries.com/v3.1/name/${country}`).then(function(response) {
-                        return response.json() //another fullfield -promise from json
-                    }).then(function(data) {
+console.log('wait ');
+//never ignore errors!!!!!!!!!
 
-                        renderCountry(data[0])
-                        const neighbours = data[0].borders;
 
-                        if (!neighbours) throw new Error('No neighbour found!');
 
-                        const neighbourPromises = neighbours.map(neighbour => {
-                            // country neighbours
-                            return getJSON(`https://restcountries.com/v3.1/alpha/${neighbour}`, 'Country not found ');
-                        });
 
-                        return Promise.all(neighbourPromises);
-                    })
-                    .then(data => {
-                        data.forEach(neighborData => {
-                            renderCountry(neighborData[0], 'neighbour');
-                        });
-                    })
-                    .catch(err => {
-                        errorRender(`Something went wrong 🔶 ${err.message} Try again.`);
-                    })
-                    .finally(() => {
-                        countriesContainer.style.opacity = 1;
-                        btn.style.opacity = 0;
-                    })
+//
 
-            })
-    })
-}
-btn.addEventListener('click', whereAmI)
+//                         const neighbourPromises = neighbours.map(neighbour => {
+//                             // country neighbours
+//                             return getJSON(`https://restcountries.com/v3.1/alpha/${neighbour}`, 'Country not found ');
+//                         });
+
+//                         return Promise.all(neighbourPromises);
+//                     })
+//                     .then(data => {
+//                         data.forEach(neighborData => {
+//                             renderCountry(neighborData[0], 'neighbour');
+//                         });
+//                     })
